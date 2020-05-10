@@ -1,6 +1,10 @@
+import CSE
 import Globals
 import numpy as np
+
+import Vehicle
 import helpers
+from Guidance import Guidance
 
 
 class UPFG:
@@ -147,3 +151,73 @@ class UPFG:
 
         rgo = rd - (r + v * tgo + rgrav)
         iz = helpers.unit_vector(np.cross(rd, iy))
+        rgoxy = rgo - np.dot(iz, rgo) * iz
+        rgoz = (s - np.dot(lbda, rgoxy)) / np.dot(lbda, iz)
+        rgo = rgoxy + rgoz * iz + rbias
+        lambdade = q - s * j / l
+        lambdadot = (rgo - s * lbda) / lambdade
+        if_ = lbda - lambdadot * j / l
+        if_ = helpers.unit_vector(if_)
+        phi = helpers.angle(if_, lbda) * Globals.rad_to_degree
+        phidot = -phi * l / j
+        vthrust = (l - 0.5 * l * phi**2 - j * phi * phidot - 0.5 * h * phidot**2) * lbda
+        rthrust = s - 0.5 * s * phi**2 - q * phi * phidot - 0.5 * p * phidot**2
+        rthrust *= lbda - (s * phi + q * phidot) * helpers.unit_vector(lambdadot)
+        vbias = vgo - vthrust
+        rbias = rgo - rthrust
+
+        _up = helpers.unit_vector(r)
+        _east = helpers.unit_vector(np.cross(np.array([0, 0, 1]), _up))
+        pitch = helpers.angle(if_, _up)
+        inplane = helpers.project(_up, if_)
+        yaw = helpers.angle(inplane, _east)
+        tangent = np.cross(_up, _east)
+
+        if np.dot(inplane, tangent) < 0:
+            yaw = -yaw
+
+        rc1 = r - 0.1 * rthrust - (tgo / 30) * vthrust
+        vc1 = v + 1.2 * rthrust / tgo - 0.1 * vthrust
+        pack = CSE.cse(rc1, vc1, tgo)
+        cser = pack[2]
+        rgrav = pack[0] - rc1 - vc1 * tgo
+        vgrav = pack[1] - vc1
+
+        rp = r + v * tgo + rgrav + rthrust
+        rp -= np.dot(rp, iy) * iy
+        rd = rdval * helpers.unit_vector(rp)
+        ix = helpers.unit_vector(rd)
+        iz = np.cross(ix, iy)
+
+        vv1 = np.array([ix[0], iy[0], iz[0]])
+        vv2 = np.array([ix[1], iy[1], iz[1]])
+        vv3 = np.array([ix[2], iy[2], iz[2]])
+        vop = np.array([
+            np.sin(gamma),
+            0,
+            np.cos(gamma)
+        ])
+        vd = np.array([
+            np.dot(vv1, vop),
+            np.dot(vv2, vop),
+            np.dot(vv3, vop)
+        ]) * vdval
+        vgo = vd - v - vgrav + vbias
+
+        current = Vehicle.State(
+            time=t,
+            cser=cser,
+            rbias=rbias,
+            rd=rd,
+            rgrav=rgrav,
+            tb=previous.tb + dt,
+            tgo=tgo,
+            velocity=v,
+            vgo=vgo,
+            mass=None,
+            radius=None
+        )
+
+        guidance = Guidance(if_, pitch, yaw, 0, 0, tgo)
+
+        return current, guidance, dt

@@ -1,5 +1,7 @@
 import numpy as np
 import math
+
+import Globals
 import helpers
 
 
@@ -26,7 +28,7 @@ def snc(z):
             }
 
 
-def cse(r0, v0, dt, mu, x0=0, tol=5e-9):
+def cse(r0, v0, dt, mu=Globals.mu, x0=0, tol=5e-9):
     rscale = np.linalg.norm(r0)
     vscale = math.sqrt(mu / rscale)
     r0s = r0 / rscale
