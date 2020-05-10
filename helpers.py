@@ -2,10 +2,6 @@ import math
 import numpy as np
 import Globals
 
-g0 = 9.80655
-
-
-
 
 def unit_vector(v):
     if v is tuple:
