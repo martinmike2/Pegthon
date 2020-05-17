@@ -1,12 +1,36 @@
 import helpers
+from Engine import Engine
 
 
 class Vehicle:
-    stages: list = None
+    stages: list = []
+    sequence: list = []
 
+    def add_sequence(self, sequence):
+        self.sequence.append(sequence)
+
+    def add_stage(self, stage):
+        self.stages.append(
+            Stage(
+                name=stage["name"],
+                massTotal=stage["mass_total"],
+                massFuel=stage["mass_fuel"],
+                massDry=stage["mass_dry"],
+                gLim=stage["g_lim"],
+                minThrottle=stage["minimum_throttle"],
+                throttle=stage["throttle"],
+                shutdownRequired=stage["shutdown_required"],
+                staging=stage["staging"],
+                engines=stage["engines"]
+            )
+        )
 
 class Stage:
-    def __init__(self, name="", massTotal=None, massFuel=None, massDry=None, gLim=None, minThrottle=None, throttle=None,
+    engines = []
+    staging = {}
+
+    def __init__(self, name="", massTotal=None, massFuel=None, massDry=None, gLim=None, minThrottle=None,
+                 throttle=None,
                  shutdownRequired=None, engines=None, staging=None):
         if staging is None:
             staging = {}
@@ -20,10 +44,15 @@ class Stage:
         self.minThrottle: float = minThrottle
         self.throttle: float = throttle
         self.shutdownRequired: bool = shutdownRequired
-        self.engines: list = engines
         self.staging: dict = staging
         self.mode = 0
         self.maxT = 0
+
+        for engine in engines:
+            self.add_engine(engine)
+
+    def add_engine(self, engine):
+        self.engines.append(Engine(engine["isp"], engine["thrust"], engine["flow"]))
 
     def get_thrust(self):
         f = 0
@@ -37,7 +66,6 @@ class Stage:
 
         isp = f / (dm * helpers.g0)
         return f, dm, isp
-
 
 class State:
     time = None

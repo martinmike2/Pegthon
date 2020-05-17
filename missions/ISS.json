@@ -1,0 +1,15 @@
+{
+  "payload": 100.0,
+  "apoapsis": 403.0,
+  "periapsis": 408.0,
+  "inclination": 53.0,
+  "altitude": null,
+  "lan": 140.0,
+  "direction": "North",
+  "launch_time_advance": 99,
+  "vertical_ascent_time": 7,
+  "pitch_over_angle": 10,
+  "upfg_activation": 99,
+  "launch_azimuth": null,
+  "initial_roll": 1
+}

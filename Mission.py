@@ -1,8 +1,8 @@
 import math
-
 import Globals
 import helpers
 from Vector3 import Vector3
+
 
 class Mission:
     def __init__(self, apoapsis=0, periapsis=0, payload=None, altitude=None, inclination=None, lan=None, direction=None):
